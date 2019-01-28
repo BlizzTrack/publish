@@ -1,0 +1,8 @@
+{
+    "bucket": "bt-example",
+    "files": [{
+        "path": "./test.txt",
+        "remote": "test/test.txt",
+        "acl": "pubic-read"
+    }]
+}
