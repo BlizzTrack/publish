@@ -1,8 +1,8 @@
 {
-    "bucket": "bt-example",
-    "files": [{
-        "path": "./test.txt",
-        "remote": "test/test.txt",
-        "acl": "pubic-read"
-    }]
+	"bucket": "bt-example",
+	"files": [{
+		"path": "example.txt",
+		"remote": "example/example.txt",
+		"acl": "public-read"
+	}]
 }

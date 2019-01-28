@@ -29,9 +29,17 @@ var (
 )
 
 func main() {
-	kingpin.Parse()
-
 	log.Printf("CWD: %s", getCWD())
+
+	argsWithoutProg := os.Args[1:]
+	if len(argsWithoutProg) > 0 {
+		if argsWithoutProg[0] == "init" {
+			createPubishFile()
+			return
+		}
+	}
+
+	kingpin.Parse()
 	awsConfig = &aws.Config{
 		Credentials: credentials.NewStaticCredentials(*AccessKey, *SecretKey, ""),
 		Endpoint:    aws.String("https://" + *Endpoint),
@@ -60,7 +68,7 @@ func readAndProcessConfig() {
 	for _, item := range conf.Files {
 		localPath := path.Join(getCWD(), item.Path)
 
-		_, err := uploadToS3(conf.Bucket, localPath, item.Remote, "public-read")
+		_, err := uploadToS3(conf.Bucket, localPath, item.Remote, item.ACL)
 		if err != nil {
 			log.Panicln(err)
 		}
@@ -103,6 +111,25 @@ func uploadToS3(bucket, localpath, remotepath, permission string) (*s3.PutObject
 	}
 
 	return out, nil
+}
+
+func createPubishFile() {
+	creationPath := fmt.Sprintf("%s/%s", getCWD(), ".publish.json")
+
+	data := core.ConfigFile{
+		Bucket: "Change-Me",
+		Files: []core.File{
+			core.File{
+				Path:   "example.txt",
+				Remote: "example/example.txt",
+				ACL:    "public-read",
+			},
+		},
+	}
+
+	publishJson, _ := json.MarshalIndent(data, "", "\t")
+	ioutil.WriteFile(creationPath, publishJson, 0644)
+	log.Println("Created .publish.json with example data")
 }
 
 func getCWD() string {
