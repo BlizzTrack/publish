@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -148,10 +149,12 @@ func uploadToS3(bucket, localpath, remotepath, permission string) (*s3.PutObject
 	file.Read(buffer)
 
 	object := s3.PutObjectInput{
-		Body:   bytes.NewReader(buffer),
-		Bucket: aws.String(bucket),
-		Key:    aws.String(remotepath),
-		ACL:    aws.String(permission),
+		Body:          bytes.NewReader(buffer),
+		Bucket:        aws.String(bucket),
+		Key:           aws.String(remotepath),
+		ACL:           aws.String(permission),
+		ContentType:   aws.String(http.DetectContentType(buffer)),
+		ContentLength: aws.Int64(fileSize),
 	}
 	out, err := s3Client.PutObject(&object)
 	if err != nil {

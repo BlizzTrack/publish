@@ -1,2 +1,3 @@
 -   Allow local S3 config at project level
 -   Allow you to do a entire folder if `Files` is empty... This will default to private, but I could allow you at publish level to control the ACL for all files
+-   Fix pattern to work better with remote path setting
