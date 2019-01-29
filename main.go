@@ -116,6 +116,10 @@ func processPattern(conf core.ConfigFile, item core.File) {
 
 // Default ACL permission to private
 func uploadToS3(bucket, localpath, remotepath, permission string) (*s3.PutObjectOutput, error) {
+	if strings.Contains(localpath, ".publish.json") {
+		return nil, nil
+	}
+
 	if len(permission) == 0 {
 		permission = "private"
 	}
