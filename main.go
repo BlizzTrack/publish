@@ -84,9 +84,13 @@ func processFile(conf core.ConfigFile, item core.File) {
 
 	localPath := path.Join(getCWD(), item.Path)
 
-	_, err := uploadToS3(conf.Bucket, localPath, item.Remote, acl)
+	out, err := uploadToS3(conf.Bucket, localPath, item.Remote, acl)
 	if err != nil {
 		log.Panicln(err)
+	}
+
+	if out == nil {
+		return
 	}
 
 	log.Printf("Uploaded %s to bucket %s", item.Path, conf.Bucket)
@@ -108,8 +112,11 @@ func processPattern(conf core.ConfigFile, item core.File) {
 		filePath = strings.Replace(filePath, "\\", "/", -1)
 		item.Path = strings.Trim(item.Path, "/")
 
-		uploadToS3(conf.Bucket, match, item.Remote+filePath, acl)
+		out, _ := uploadToS3(conf.Bucket, match, item.Remote+filePath, acl)
 
+		if out == nil {
+			continue
+		}
 		log.Printf("Uploaded %s to bucket %s", filePath, conf.Bucket)
 	}
 }
