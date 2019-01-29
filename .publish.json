@@ -1,8 +1,14 @@
 {
 	"bucket": "bt-example",
 	"files": [{
-		"path": "example.txt",
-		"remote": "example/example.txt",
-		"acl": "public-read"
-	}]
+			"pattern": "*/*.txt",
+			"remote": "example/",
+			"acl": "public-read"
+		},
+		{
+			"path": "assets/test.txt",
+			"remote": "example/test-2.txt",
+			"acl": "public-read"
+		}
+	]
 }

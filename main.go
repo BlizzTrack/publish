@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/blizztrack/publish/core"
 
@@ -66,14 +68,49 @@ func readAndProcessConfig() {
 	json.Unmarshal(plan, &conf)
 
 	for _, item := range conf.Files {
-		localPath := path.Join(getCWD(), item.Path)
-
-		_, err := uploadToS3(conf.Bucket, localPath, item.Remote, item.ACL)
-		if err != nil {
-			log.Panicln(err)
+		if len(item.Pattern) == 0 {
+			processFile(conf, item)
+		} else {
+			processPattern(conf, item)
 		}
+	}
+}
 
-		log.Printf("Uploaded %s to bucket %s", item.Path, conf.Bucket)
+func processFile(conf core.ConfigFile, item core.File) {
+	acl := item.ACL
+	if len(conf.GlobalACL) > 0 {
+		acl = conf.GlobalACL
+	}
+
+	localPath := path.Join(getCWD(), item.Path)
+
+	_, err := uploadToS3(conf.Bucket, localPath, item.Remote, acl)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	log.Printf("Uploaded %s to bucket %s", item.Path, conf.Bucket)
+}
+
+func processPattern(conf core.ConfigFile, item core.File) {
+	acl := item.ACL
+	if len(conf.GlobalACL) > 0 {
+		acl = conf.GlobalACL
+	}
+
+	globPath := fmt.Sprintf("%s/%s", getCWD(), item.Pattern)
+	// TODO: handle error
+	matches, _ := filepath.Glob(globPath)
+
+	for _, match := range matches {
+		filePath := strings.Replace(match, getCWD(), "", -1)
+		// Cause windows
+		filePath = strings.Replace(filePath, "\\", "/", -1)
+		item.Path = strings.Trim(item.Path, "/")
+
+		uploadToS3(conf.Bucket, match, item.Remote+filePath, acl)
+
+		log.Printf("Uploaded %s to bucket %s", filePath, conf.Bucket)
 	}
 }
 
